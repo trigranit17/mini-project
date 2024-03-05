@@ -7,7 +7,7 @@ function AdminDashboard() {
 
     useEffect(() => {
         const fetchQuizzes = async () => {
-            const backendURL = 'http://localhost:8080/api/quizzes'; 
+            const backendURL = 'http://localhost:8080/backend/'; 
 
             try {
                 const response = await fetch(backendURL, {
@@ -22,10 +22,9 @@ function AdminDashboard() {
                 }
 
                 const data = await response.json();
-                setQuizzes(data.quizzes); // Sesuaikan dengan struktur response dari API Anda
+                setQuizzes(data.quizzes); 
             } catch (error) {
                 console.error('Error:', error);
-                // Redirect ke halaman login jika ada masalah (misal, token expired)
                 navigate('/login');
             }
         };

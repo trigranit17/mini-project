@@ -4,12 +4,12 @@ import {useNavigate} from 'react-router-dom';
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate(); // Hook useNavigate untuk navigasi
+    const navigate = useNavigate(); 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const backendURL = 'http://localhost:8080/api/auth/login'; // Ganti sesuai backend Anda
+        const backendURL = 'http://localhost:8080/backend'; 
 
         try {
             const response = await fetch(backendURL, {
@@ -26,9 +26,9 @@ function Login() {
 
             const data = await response.json();
             console.log(data);
-            localStorage.setItem('token', data.token); // Simpan token ke localStorage
+            localStorage.setItem('token', data.token); 
 
-            navigate('/admin/dashboard'); // Gunakan navigate untuk redirect ke dashboard
+            navigate('/admin/dashboard'); 
 
         } catch (error) {
             console.error('Error:', error);
