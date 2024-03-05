@@ -1,59 +1,163 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-function AdminDashboard() {
+const AdminDashboard = () => {
     const [quizzes, setQuizzes] = useState([]);
-    const navigate = useNavigate(); 
+    const [formState, setFormState] = useState({title: '', description: ''}); 
+    const [editingQuizId, setEditingQuizId] = useState(null); 
+    const [participantAnswers, setParticipantAnswers] = useState([]);
 
     useEffect(() => {
+        fetchQuizzes();
+    }, []);
+
+    const AdminDashboard = () => {
+        const navigate = useNavigate();
+
+        const goToQuizDetails = (quizId) => {
+            navigate(`/admin/quiz/${quizId}`);
+        };
+
+        const goToQuizForm = (quizId) => {
+            navigate(`/admin/quiz-form/${quizId}`);
+        };
+
+        const createNewQuiz = () => {
+            navigate('/admin/quiz-form');
+        };
+
+        const viewParticipantAnswers = (quizId) => {
+            navigate(`/admin/quiz/${quizId}/answers`);
+        };
+
         const fetchQuizzes = async () => {
-            const backendURL = 'http://localhost:8080/backend/'; 
-
             try {
-                const response = await fetch(backendURL, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // ${localStorage.getItem('token')}`,
-                    }
-                });
-
+                const response = await fetch('http://localhost:8080/backend');
                 if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.statusText);
+                    throw new Error('Data could not be fetched!');
                 }
-
                 const data = await response.json();
-                setQuizzes(data.quizzes); 
+                setQuizzes(data.quizzes);
             } catch (error) {
-                console.error('Error:', error);
-                navigate('/login');
+                console.error(error.message);
             }
         };
 
-        fetchQuizzes();
-    }, [navigate]);
+        const handleDeleteQuiz = async (quizId) => {
+            try {
+                const response = await fetch(
+                    `http://localhost:8080/backend/${quizId}`,
+                    {method: 'DELETE'}
+                );
+                if (!response.ok) {
+                    throw new Error('Could not delete quiz!');
+                }
+                fetchQuizzes(); // Refresh daftar quiz setelah penghapusan
+            } catch (error) {
+                console.error(error.message);
+            }
+        };
 
-    return (
-        <div className="max-w-4xl mx-auto my-10">
-            <h2 className="text-2xl font-semibold text-gray-800">Quiz List</h2>
-            <div className="mt-5">
-                <ul className="bg-white shadow-md rounded-lg">
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            const url = editingQuizId
+                ? `http://localhost:8080/backend/${editingQuizId}`
+                : 'http://localhost:8080/backend';
+            const method = editingQuizId
+                ? 'PUT'
+                : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formState)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Could not process the form.');
+                }
+
+                await fetchQuizzes(); // Memperbarui daftar quiz setelah sukses
+                setFormState({title: '', description: ''}); // Reset form state
+                setEditingQuizId(null); // Reset editing state
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        const handleEditQuiz = (quiz) => {
+            setFormState({title: quiz.title, description: quiz.description});
+            setEditingQuizId(quiz.id);
+        };
+
+        const fetchParticipantAnswers = async (quizId) => {
+            try {
+                const response = await fetch(`http://localhost:8080/backend/${quizId}/answers`);
+                if (!response.ok) {
+                    throw new Error('Could not fetch participant answers!');
+                }
+                const data = await response.json();
+                setParticipantAnswers(data.answers); // Asumsikan respons dalam format { answers: [] }
+            } catch (error) {
+                console.error(error.message);
+            }
+        };
+
+        return (
+            <div>
+                <h2>Daftar Quiz</h2>
+                <ul>
                     {
                         quizzes.map((quiz) => (
-                            <li key={quiz.id} className="px-6 py-4 border-b border-gray-200">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-700 font-medium">{quiz.judul}</span>
-                                    <button
-                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                        Manage
-                                    </button>
-                                </div>
+                            <li key={quiz.id}>
+                                {quiz.title}
+                                - {quiz.description}
+                                <button onClick={() => viewParticipantAnswers(quiz.id)}>Lihat Jawaban</button>
+                                <button onClick={() => handleEditQuiz(quiz)}>Edit</button>
+                                <button onClick={() => handleDeleteQuiz(quiz.id)}>Hapus</button>
                             </li>
                         ))
                     }
                 </ul>
+                <h3>{
+                        editingQuizId
+                            ? 'Edit Quiz'
+                            : 'Buat Quiz Baru'
+                    }</h3>
+                <form onSubmit={handleFormSubmit}>
+                    <label>
+                        Judul Quiz:
+                        <input
+                            type="text"
+                            value={formState.title}
+                            onChange={(e) => setFormState({
+                                ...formState,
+                                title: e.target.value
+                            })}/>
+                    </label>
+                    <label>
+                        Deskripsi Quiz:
+                        <input
+                            type="text"
+                            value={formState.description}
+                            onChange={(e) => setFormState({
+                                ...formState,
+                                description: e.target.value
+                            })}/>
+                    </label>
+                    <button type="submit">{
+                            editingQuizId
+                                ? 'Update'
+                                : 'Simpan'
+                        }</button>
+                </form>
+                <button onClick={createNewQuiz}>Buat Quiz Baru</button>
             </div>
-        </div>
-    );
-}
+        );
+    };
+};
 
 export default AdminDashboard;
