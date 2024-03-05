@@ -43,3 +43,6 @@ Metro is the JavaScript build tool for React Native. To start the Metro developm
 Step 2: Start your application
 Let Metro Bundler run in its own terminal. Open a new terminal inside your React Native project folder. Run the following:
   npm run android
+
+Notes ReactNative:
+Karena gagal push untuk directory mobile, untuk file LoginScreen, QuizListScreen, QuizScreen seharusnya berada pada directory app/screen. Setelah melakukan init QuizApp tinggal menambah directory app/screen dan file LoginScreen.jsx, QuizListScreen.jsx, QuizScreen.jsx
