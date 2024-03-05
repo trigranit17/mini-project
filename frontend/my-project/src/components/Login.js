@@ -1,18 +1,37 @@
-// src/components/Login.js
 import React, {useState} from 'react';
-import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate(); // Hook useNavigate untuk navigasi
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const backendURL = 'http://localhost:8080/api/auth/login'; // Ganti sesuai backend Anda
+
         try {
-            const {data} = await axios.post('http://localhost:3000/Projek/backend/cmd', {email, password});
-            console.log(data); // Simpan token ke localStorage dan redirect user
+            const response = await fetch(backendURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({email, password})
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+
+            const data = await response.json();
+            console.log(data);
+            localStorage.setItem('token', data.token); // Simpan token ke localStorage
+
+            navigate('/admin/dashboard'); // Gunakan navigate untuk redirect ke dashboard
+
         } catch (error) {
-            console.error(error);
+            console.error('Error:', error);
         }
     };
 

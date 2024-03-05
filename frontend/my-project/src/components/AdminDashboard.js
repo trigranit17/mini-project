@@ -1,21 +1,37 @@
-import React, {useState, useEffect} from 'react';
-import axios from 'axios';
+import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 function AdminDashboard() {
     const [quizzes, setQuizzes] = useState([]);
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         const fetchQuizzes = async () => {
+            const backendURL = 'http://localhost:8080/api/quizzes'; 
+
             try {
-                const {data} = await axios.get('YOUR_BACKEND_API/quizzes');
-                setQuizzes(data);
+                const response = await fetch(backendURL, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // ${localStorage.getItem('token')}`,
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+
+                const data = await response.json();
+                setQuizzes(data.quizzes); // Sesuaikan dengan struktur response dari API Anda
             } catch (error) {
-                console.error(error);
+                console.error('Error:', error);
+                // Redirect ke halaman login jika ada masalah (misal, token expired)
+                navigate('/login');
             }
         };
 
         fetchQuizzes();
-    }, []);
+    }, [navigate]);
 
     return (
         <div className="max-w-4xl mx-auto my-10">
